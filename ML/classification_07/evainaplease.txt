@@ -1,0 +1,272 @@
+# Classification problem 
+
+1. Exploratory Data analysis 
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Basic info
+print(df.info())
+print(df.describe())
+
+print(df.columns)
+
+# Pair plot
+sns.pairplot(df, hue='ChestPainType')  # Replace 'target' with the column name for labels in your dataset
+plt.show()
+
+
+
+
+2. Handling Missing values 
+
+import pandas as pd
+from sklearn.impute import SimpleImputer
+
+# Load dataset
+df = pd.read_csv('/content/heart_disease_prediction_classification.csv')
+
+# Imputation
+mean_imputer = SimpleImputer(strategy='mean')
+df['RestingBP'] = mean_imputer.fit_transform(df[['RestingBP']])
+
+mode_imputer = SimpleImputer(strategy='most_frequent')
+df['ExerciseAngina'] = mode_imputer.fit_transform(df[['ExerciseAngina']]).ravel()
+
+# Drop rows with many missing values
+df = df.dropna(subset=['ExerciseAngina'])
+
+print(df.isnull().sum())
+
+
+
+
+3. Scalling and Normalization 
+
+
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Separate features (assuming all columns except the last are features)
+X = df.iloc[:, :-1]  # Modify if your features are in different columns
+
+X = pd.get_dummies(X, columns=['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']) # List your categorical columns here
+
+# Z-score scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Min-Max scaling
+normalizer = MinMaxScaler()
+X_normalized = normalizer.fit_transform(X)
+
+# Optional: Convert back to DataFrame for easier inspection
+X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
+X_normalized_df = pd.DataFrame(X_normalized, columns=X.columns)
+
+print("Z-score Scaled Data (first 5 rows):\n", X_scaled_df.head())
+print("\nMin-Max Normalized Data (first 5 rows):\n", X_normalized_df.head())
+
+
+
+
+
+4. Handling Imbalance dataset 
+
+from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder 
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Separate features (X) and target (y)
+X = df.iloc[:, :-1]  # All columns except the last are features
+y = df.iloc[:, -1]   # The last column is the target variable
+
+
+# Convert categorical features to numerical using Label Encoding
+categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope'] # List your categorical columns 
+for col in categorical_cols:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+
+# Oversample with SMOTE
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X, y)
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+
+# Train and evaluate
+clf = RandomForestClassifier(random_state=42)
+clf.fit(X_train, y_train)
+y_pred = clf.predict(X_test)
+print(f"F1-Score: {f1_score(y_test, y_pred, average='weighted')}")
+
+
+
+
+
+
+5. Encoding Categorical Variables
+
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
+
+# Load dataset
+df = pd.read_csv('/content/heart_disease_prediction_classification.csv')
+
+# Label Encoding
+encoder = LabelEncoder()
+df['ChestPainType'] = encoder.fit_transform(df['ChestPainType'])
+
+# One-Hot Encoding
+df = pd.get_dummies(df, columns=['ChestPainType'], drop_first=True)
+print(df.head())
+
+
+
+
+
+6. Feature Transformation
+
+
+
+import pandas as pd
+from sklearn.decomposition import PCA
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Separate features (assuming all columns except the last are features)
+X = df.iloc[:, :-1]  # Modify if your features are in different columns
+
+
+categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']  # List your categorical columns
+for col in categorical_cols:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+
+# Apply PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+
+print(f"Explained Variance Ratio: {pca.explained_variance_ratio_}")
+
+
+
+
+
+
+7. Train a Binary Classifier
+
+fimport pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Separate features (X) and target (y)
+X = df.iloc[:, :-1]  # All columns except the last are features
+y = df.iloc[:, -1]   # The last column is the target variable
+
+
+# Convert categorical features to numerical using Label Encoding
+
+categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']  # List your categorical columns
+for col in categorical_cols:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train logistic regression
+clf = LogisticRegression(random_state=42)
+clf.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = clf.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+
+
+
+
+
+8. multi class classifier 
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+
+# Load dataset
+data = load_iris()
+X, y = data.data, data.target
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+# Train SVM
+clf = SVC()
+clf.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = clf.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+
+9. Evaluation Metrics and Cross-Validation
+
+import pandas as pd
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+
+# Load dataset
+df = pd.read_csv("/content/heart_disease_prediction_classification.csv")  # Replace with your dataset file path
+
+# Separate features (X) and target (y)
+X = df.iloc[:, :-1]  # All columns except the last are features
+y = df.iloc[:, -1]   # The last column is the target variable
+
+# Convert categorical features to numerical using Label Encoding
+categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']  # List your categorical columns
+for col in categorical_cols:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+
+# Train classifier and perform cross-validation
+clf = RandomForestClassifier(random_state=42)
+scores = cross_val_score(clf, X, y, cv=5)
+
+print(f"Cross-Validation Scores: {scores}")
+print(f"Mean Cross-Validation Score: {scores.mean()}")
+
+
+
+
+
+10.  comparing models
+
+
+
+
+categorical_cols = ['Sex', 'ChestPainType', 'RestingECG', 'ExerciseAngina', 'ST_Slope']  # List your categorical columns
+for col in categorical_cols:
+    le = LabelEncoder()
+    X_train[col] = le.fit_transform(X_train[col])  # Fit and transform on training data
+    X_test[col] = le.transform(X_test[col]) 

@@ -1,0 +1,223 @@
+# Generated from: clustering.ipynb
+# Converted at: 2026-02-16T18:04:52.666Z
+# Next step (optional): refactor into modules & generate tests with RunCell
+# Quick start: pip install runcell
+
+!pip install matplotlib
+
+!pip install seaborn scikit-learn
+
+# Core libraries
+import pandas as pd
+import numpy as np
+
+# Visualization
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Preprocessing
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Clustering
+from sklearn.cluster import KMeans, AgglomerativeClustering
+
+# Evaluation metrics
+from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score
+
+# Hierarchical clustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+from scipy.stats import zscore
+
+
+# Load dataset
+data = pd.read_csv("iris_clustering.csv")
+
+# Basic inspection
+print("Dataset Info:")
+print(data.info())
+
+print("\nFirst 5 rows:")
+print(data.head())
+
+
+# Separate target and features
+target = data['species']
+features = data.drop(columns=['species'])
+
+
+# Check missing values
+print("\nMissing Values:")
+print(data.isnull().sum())
+
+# Histograms
+features.hist(figsize=(10, 6), bins=15)
+plt.show()
+
+
+zscore?
+
+# Calculate Z Score 
+z_scores = np.abs(zscore(features))
+
+z_scores
+
+# identify non outliers 
+non_outliers = (z_scores < 3).all(axis=1)
+
+# shape before outlier 
+
+print(target.shape)
+print(features.shape)
+
+non_outliers
+
+# remove outliers 
+
+features_clean = features[non_outliers]
+target_clean = target[non_outliers]
+
+
+
+# shape after outlier 
+
+print(target.shape)
+print(features.shape)
+
+print("Original shape:", features.shape)
+print("After outlier removal:", features_clean.shape)
+
+# feature scaling
+
+scaler = StandardScaler()
+
+scaled_features = pd.DataFrame(
+    scaler.fit_transform(features_clean),
+    columns=features_clean.columns
+)
+
+print("\nStandardized Data:")
+print(scaled_features.head())
+
+
+# MinMaxScaler
+
+minmax = MinMaxScaler()
+normalized_features = pd.DataFrame(
+    minmax.fit_transform(features_clean),
+    columns=features_clean.columns
+)
+
+print("\nNormalized Data:")
+print(normalized_features.head())
+
+
+KMeans?
+
+# Elbow Method (K-Means) - finding value of K
+
+inertia = []
+k_range = range(1, 11)
+
+for k in k_range:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_features)
+    inertia.append(kmeans.inertia_)
+
+
+inertia
+
+plt.figure(figsize=(8, 5))
+plt.plot(k_range, inertia, marker='o')
+plt.xlabel("Number of Clusters")
+plt.ylabel("Inertia")
+plt.title("Elbow Method")
+plt.show()
+
+plt.plot?
+
+KMeans?
+
+# Apply K Means
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans_labels = kmeans.fit_predict(scaled_features)
+
+# Add the cluster labels to the original scaled dataframe
+scaled_features['KMeans_Cluster'] = kmeans_labels
+
+
+# visualizations
+
+sns.scatterplot(
+    x=scaled_features.iloc[:, 0],
+    y=scaled_features.iloc[:, 1],
+    hue=scaled_features['KMeans_Cluster'],
+    palette="viridis"
+)
+plt.title("K-Means Clustering (After Outlier Removal)")
+plt.show()
+
+
+dendrogram?
+
+linkage?
+
+# perform hierarchical clustering
+
+linked = linkage(
+    scaled_features.drop(columns=['KMeans_Cluster']),'ward'
+)
+
+plt.figure(figsize=(10, 7))
+dendrogram(linked)
+plt.title("Hierarchical Clustering Dendrogram")
+plt.show()
+
+
+# applying  agglomerativeClustering 
+
+AgglomerativeClustering?
+
+agg = AgglomerativeClustering(n_clusters=3)
+hier_labels = agg.fit_predict(
+    scaled_features.drop(columns=['KMeans_Cluster'])
+)
+
+scaled_features['Hierarchical_Cluster'] = hier_labels
+
+sns.scatterplot(
+    x=scaled_features.iloc[:, 0],
+    y=scaled_features.iloc[:, 1],
+    hue=scaled_features['Hierarchical_Cluster'],
+    palette="cool"
+)
+plt.title("Hierarchical Clustering (After Outlier Removal)")
+plt.show()
+
+
+# clustering Evaluation 
+
+
+X_eval = scaled_features.drop(
+    columns=['KMeans_Cluster', 'Hierarchical_Cluster']
+)
+
+# Silhouette Score
+sil_kmeans = silhouette_score(X_eval, scaled_features['KMeans_Cluster'])
+sil_hier = silhouette_score(X_eval, scaled_features['Hierarchical_Cluster'])
+
+# Davies-Bouldin Index
+db_kmeans = davies_bouldin_score(X_eval, scaled_features['KMeans_Cluster'])
+db_hier = davies_bouldin_score(X_eval, scaled_features['Hierarchical_Cluster'])
+
+# Adjusted Rand Index
+ari_kmeans = adjusted_rand_score(target_clean, scaled_features['KMeans_Cluster'])
+ari_hier = adjusted_rand_score(target_clean, scaled_features['Hierarchical_Cluster'])
+
+print("\nClustering Evaluation Metrics (After Outlier Handling)")
+print(f"Silhouette (KMeans): {sil_kmeans}")
+print(f"Silhouette (Hierarchical): {sil_hier}")
+print(f"Davies-Bouldin (KMeans): {db_kmeans}")
+print(f"Davies-Bouldin (Hierarchical): {db_hier}")
+print(f"ARI (KMeans): {ari_kmeans}")
+print(f"ARI (Hierarchical): {ari_hier}")

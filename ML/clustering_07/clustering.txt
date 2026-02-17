@@ -1,0 +1,328 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load the dataset
+file_path = 'iris_clustering.csv'
+data = pd.read_csv('/content/iris_clustering.csv')
+
+# Display basic info
+print("Dataset Info:")
+print(data.info())
+
+# Display the first few rows
+print("\nFirst few rows of the dataset:")
+print(data.head())
+
+# Pair plot to visualize data distribution
+# Changed hue to 'cluster' as it's the available column for coloring
+# sns.pairplot(data, diag_kind="kde", hue="cluster")  
+# plt.show()
+
+# Check for missing values
+print("\nMissing Values in Each Column:")
+print(data.isnull().sum())
+
+# Plot histograms to analyze distributions
+data.hist(figsize=(10, 6), bins=15)
+plt.tight_layout()
+plt.show()
+
+
+
+--------------------------------------------------------------------------
+
+# Select only numeric columns from the dataset
+numeric_data = data.select_dtypes(include=["float64", "int64"])
+
+# Display the numeric columns
+print("Numeric Columns Only:")
+print(numeric_data.head())
+
+
+
+
+
+
+
+--------------------------------------------------------------------------
+
+from sklearn.preprocessing import StandardScaler
+
+# Scale only the numeric columns
+scaler = StandardScaler()
+scaled_data = pd.DataFrame(scaler.fit_transform(numeric_data), columns=numeric_data.columns)
+
+print("Scaled Numeric Data:")
+print(scaled_data.head())
+
+
+--------------------------------------------------------------------------
+
+from sklearn.cluster import KMeans
+
+# Apply K-means clustering to numeric data only
+kmeans = KMeans(n_clusters=3, random_state=42)
+clusters = kmeans.fit_predict(scaled_data)
+
+# Add the cluster labels to the original dataframe
+data['Cluster'] = clusters
+
+print("Clustered Data:")
+print(data.head())
+
+--------------------------------------------------------------------------
+
+# Example: Compute mean for numeric columns only
+numeric_mean = data.select_dtypes(include=["float64", "int64"]).mean()
+print("Mean of Numeric Columns:")
+print(numeric_mean)
+
+--------------------------------------------------------------------------
+
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Load the dataset
+file_path = 'iris_clustering.csv'
+data = pd.read_csv(file_path)
+
+# Step 1: Select numeric columns only
+numeric_data = data.select_dtypes(include=["float64", "int64"])
+
+# Step 2: Perform Standardization (Z-score Scaling)
+scaler = StandardScaler()
+standardized_data = pd.DataFrame(scaler.fit_transform(numeric_data), columns=numeric_data.columns)
+
+# Step 3: Perform Min-Max Normalization
+min_max_scaler = MinMaxScaler()
+normalized_data = pd.DataFrame(min_max_scaler.fit_transform(numeric_data), columns=numeric_data.columns)
+
+# Display Results
+print("Original Data:")
+print(numeric_data.head())
+
+print("\nStandardized Data (Z-score):")
+print(standardized_data.head())
+
+print("\nNormalized Data (Min-Max Scaling):")
+print(normalized_data.head())
+
+--------------------------------------------------------------------------------
+
+!pip install pandas
+import pandas as pd
+# download the dataset
+# !wget https://gist.githubusercontent.com/curran/a08a1080b88344b0c8a7/raw/0e7a9b0a5d22642a06d3d5b9bcbad9890c8ee534/iris.csv -O iris_clustering.csv
+# load it as a dataframe
+data = pd.read_csv('iris_clustering.csv')
+
+#display basic info to make sure the species column was loaded
+print("Dataset Info:")
+print(data.info())
+print(data.head())
+
+------------------------------------------------------------------------------------
+
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+# Load the dataset
+file_path = 'iris_clustering.csv'
+data = pd.read_csv(file_path)
+
+# Separate the target variable ('species') from the features
+target = data['species']
+features = data.drop(columns=['species'])
+
+# Standardization (Z-score)
+scaler = StandardScaler()
+scaled_features = pd.DataFrame(scaler.fit_transform(features), columns=features.columns)
+
+# Display the standardized data
+print("\nStandardized Data:")
+print(scaled_features.head())
+
+# Add the target column back for clustering purposes
+scaled_data = scaled_features.copy() # create a copy
+scaled_data['species'] = target # add the target to the copy
+
+#Verify that species column was added
+print("\nData with species column")
+print(scaled_data.head())
+
+# Min-Max Normalization
+min_max_scaler = MinMaxScaler()
+normalized_data = pd.DataFrame(min_max_scaler.fit_transform(features), columns=features.columns)
+
+# Display the normalized data
+print("\nNormalized Data:")
+print(normalized_data.head())
+
+---------------------------------------------------------------------
+
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+# Elbow Method to find the optimal number of clusters
+inertia = []
+k_values = range(1, 11)
+
+for k in k_values:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data.iloc[:, :-1])
+    inertia.append(kmeans.inertia_)
+
+# Plot the Elbow Curve
+plt.figure(figsize=(8, 5))
+plt.plot(k_values, inertia, marker='o')
+plt.title("Elbow Method")
+plt.xlabel("Number of Clusters")
+plt.ylabel("Inertia (within-cluster sum of squares)")
+plt.show()
+
+# Apply K-means with the optimal number of clusters (e.g., 3)
+kmeans = KMeans(n_clusters=3, random_state=42)
+scaled_data['Cluster'] = kmeans.fit_predict(scaled_data.iloc[:, :-1])
+
+# Visualize Clusters
+sns.scatterplot(x=scaled_data.iloc[:, 0], y=scaled_data.iloc[:, 1], hue=scaled_data['Cluster'], palette="viridis")
+plt.title("K-means Clustering Results")
+plt.show()
+
+------------------------------------------------------------------------------
+
+
+from scipy.cluster.hierarchy import dendrogram, linkage
+from sklearn.cluster import AgglomerativeClustering
+
+# Perform Hierarchical Clustering
+linked = linkage(scaled_data.iloc[:, :-2], method='ward')
+
+# Plot Dendrogram
+plt.figure(figsize=(10, 7))
+dendrogram(linked, orientation='top', distance_sort='descending', show_leaf_counts=True)
+plt.title("Dendrogram for Hierarchical Clustering")
+plt.show()
+
+# Apply Agglomerative Clustering with optimal clusters (e.g., 3)
+agg_cluster = AgglomerativeClustering(n_clusters=3)
+scaled_data['Hierarchical Cluster'] = agg_cluster.fit_predict(scaled_data.iloc[:, :-2])
+
+# Visualize Hierarchical Clusters
+sns.scatterplot(x=scaled_data.iloc[:, 0], y=scaled_data.iloc[:, 1], hue=scaled_data['Hierarchical Cluster'], palette="cool")
+plt.title("Hierarchical Clustering Results")
+plt.show()
+
+
+----------------------------------------------------------------------------------
+
+
+# Install necessary libraries
+!pip install pandas scikit-learn
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.metrics import adjusted_rand_score, davies_bouldin_score, silhouette_score
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Download the dataset
+!wget https://gist.githubusercontent.com/curran/a08a1080b88344b0c8a7/raw/0e7a9b0a5d22642a06d3d5b9bcbad9890c8ee534/iris.csv -O iris_clustering.csv
+
+# Load the dataset
+file_path = 'iris_clustering.csv'
+data = pd.read_csv(file_path)
+
+# Separate the target variable ('species') from the features
+target = data['species']
+features = data.drop(columns=['species'])
+
+# Standardization (Z-score)
+scaler = StandardScaler()
+scaled_features = pd.DataFrame(scaler.fit_transform(features), columns=features.columns)
+
+# Display the standardized data
+print("\nStandardized Data:")
+print(scaled_features.head())
+
+#Min max Normalization
+min_max_scaler = MinMaxScaler()
+normalized_data = pd.DataFrame(min_max_scaler.fit_transform(features), columns=features.columns)
+
+# Display the normalized data
+print("\nNormalized Data:")
+print(normalized_data.head())
+
+# Elbow Method to find the optimal number of clusters
+inertia = []
+k_values = range(1, 11)
+
+for k in k_values:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_features) # fit to only the features
+    inertia.append(kmeans.inertia_)
+
+# Plot the Elbow Curve
+plt.figure(figsize=(8, 5))
+plt.plot(k_values, inertia, marker='o')
+plt.title("Elbow Method")
+plt.xlabel("Number of Clusters")
+plt.ylabel("Inertia (within-cluster sum of squares)")
+plt.show()
+
+# Apply K-means with the optimal number of clusters (e.g., 3)
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans_clusters = kmeans.fit_predict(scaled_features)
+scaled_features['Cluster'] = kmeans_clusters # add the cluster data
+
+# Visualize Clusters
+sns.scatterplot(x=scaled_features.iloc[:, 0], y=scaled_features.iloc[:, 1], hue=scaled_features['Cluster'], palette="viridis")
+plt.title("K-means Clustering Results")
+plt.show()
+
+# Perform Hierarchical Clustering
+linked = linkage(scaled_features, method='ward')
+
+# Plot Dendrogram
+plt.figure(figsize=(10, 7))
+dendrogram(linked, orientation='top', distance_sort='descending', show_leaf_counts=True)
+plt.title("Dendrogram for Hierarchical Clustering")
+plt.show()
+
+# Apply Agglomerative Clustering with optimal clusters (e.g., 3)
+agg_cluster = AgglomerativeClustering(n_clusters=3)
+agg_clusters = agg_cluster.fit_predict(scaled_features)
+scaled_features['Hierarchical Cluster'] = agg_clusters # add the hierarchical cluster data
+
+# Visualize Hierarchical Clusters
+sns.scatterplot(x=scaled_features.iloc[:, 0], y=scaled_features.iloc[:, 1], hue=scaled_features['Hierarchical Cluster'], palette="cool")
+plt.title("Hierarchical Clustering Results")
+plt.show()
+
+# Silhouette Score
+numeric_cols = [col for col in scaled_features.columns if col not in ['Cluster', 'Hierarchical Cluster']] # get all the columns that aren't the cluster columns
+silhouette_kmeans = silhouette_score(scaled_features[numeric_cols], scaled_features['Cluster'])
+silhouette_hierarchical = silhouette_score(scaled_features[numeric_cols], scaled_features['Hierarchical Cluster'])
+
+# Davies-Bouldin Index
+db_index_kmeans = davies_bouldin_score(scaled_features[numeric_cols], scaled_features['Cluster'])
+db_index_hierarchical = davies_bouldin_score(scaled_features[numeric_cols], scaled_features['Hierarchical Cluster'])
+
+# Adjusted Rand Index (if true labels are available)
+ari_kmeans = adjusted_rand_score(data['species'], scaled_features['Cluster']) # use data['species']
+ari_hierarchical = adjusted_rand_score(data['species'], scaled_features['Hierarchical Cluster']) # use data['species']
+
+# Print Results
+print("\nClustering Evaluation Metrics:")
+print(f"Silhouette Score (K-means): {silhouette_kmeans}")
+print(f"Silhouette Score (Hierarchical): {silhouette_hierarchical}")
+print(f"Davies-Bouldin Index (K-means): {db_index_kmeans}")
+print(f"Davies-Bouldin Index (Hierarchical): {db_index_hierarchical}")
+print(f"Adjusted Rand Index (K-means): {ari_kmeans}")
+print(f"Adjusted Rand Index (Hierarchical): {ari_hierarchical}")
+
+
