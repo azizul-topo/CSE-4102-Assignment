@@ -59,4 +59,12 @@ prolog code:
 ?- likes(sabbir, X).
 ?- likes(sakib, riad).
 ?- likes(sakib, X).
+----------------
+
+54 ?- likes(sabbir,riad).
+true .
+
+56 ?- likes(sakib,flower).
+true 
+
 
