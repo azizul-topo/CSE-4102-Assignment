@@ -1,3 +1,4 @@
+*************** 7  *****************
 brother(rashid, tamim).
 brother(rashid, rishab).
 
@@ -10,7 +11,25 @@ man(rishab).
 
 woman(champa).
 
+prolog code: 
+1️⃣ Find who are women
+?- woman(champa).
+2️⃣ Find who are women using variable
+?- woman(X).
+3️⃣ Find who are men
+?- man(X).
+4️⃣ Find Champa’s brother
+?- brother(X, tamim).
+5️⃣ Find Rashid’s two brothers
+?- brother(rashid, X).
+6️⃣ Find Rashid’s two brothers using variable
+?- brother(rashid, B).
+
+
+
 ----------------------------------------------------------------------------
+
+************    6   *************
 
 % ---------- Facts ----------
 
@@ -36,6 +55,8 @@ likes(sabbir, Person) :-
 likes(sakib, Thing) :-
     likes(sabbir, Thing).
 
-Rules/statements
-1. Sabbir likes anyone who likes football'
-2. Sakib likes anything that Sabbir likes'
+prolog code: 
+?- likes(sabbir, X).
+?- likes(sakib, riad).
+?- likes(sakib, X).
+
