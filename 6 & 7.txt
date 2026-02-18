@@ -1,0 +1,41 @@
+brother(rashid, tamim).
+brother(rashid, rishab).
+
+sister(champa, tamim).
+sister(champa, rishab).
+
+man(rashid).
+man(tamim).
+man(rishab).
+
+woman(champa).
+
+----------------------------------------------------------------------------
+
+% ---------- Facts ----------
+
+likes(sakib, cricket).
+likes(sakib, football).
+likes(sakib, rugby).
+
+likes(riad, football).
+likes(riad, rugby).
+
+likes(sabbir, flower).
+likes(sabbir, cuisine).
+likes(sabbir, fruits).
+likes(jhilam, fruits).
+
+% ---------- Rules ----------
+
+% 1. Sabbir likes anyone who likes football
+likes(sabbir, Person) :-
+    likes(Person, football).
+
+% 2. Sakib likes anything that Sabbir likes
+likes(sakib, Thing) :-
+    likes(sabbir, Thing).
+
+Rules/statements
+1. Sabbir likes anyone who likes football'
+2. Sakib likes anything that Sabbir likes'
